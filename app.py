@@ -39,7 +39,6 @@ list_stopwords = load_stopwords()
 
 @st.cache_resource
 def load_models():
-
     with open("model_klasifikasi_detik.pkl", "rb") as f:
         data = pickle.load(f)
 
@@ -58,7 +57,6 @@ w2v_model, nb_model, vector_size = load_models()
 # ==========================================
 
 def preprocessing_text(text):
-
     if not isinstance(text, str):
         return []
 
@@ -95,9 +93,7 @@ def preprocessing_text(text):
 # ==========================================
 
 def get_detik_news_text(url):
-
     try:
-
         headers = {
             "User-Agent": (
                 "Mozilla/5.0 "
@@ -130,14 +126,12 @@ def get_detik_news_text(url):
 
         # Alternatif struktur
         if not article_body:
-
             article_body = soup.find(
                 "div",
                 class_="itp_bodycontent"
             )
 
         if article_body:
-
             paragraphs = article_body.find_all("p")
 
             text_content = " ".join(
@@ -150,9 +144,7 @@ def get_detik_news_text(url):
         return None
 
     except Exception as e:
-
         st.error(f"Terjadi error saat mengambil berita: {e}")
-
         return None
 
 
@@ -165,7 +157,6 @@ def get_document_vector(
     model,
     v_size
 ):
-
     vectors = [
         model.wv[word]
         for word in tokens
@@ -173,7 +164,6 @@ def get_document_vector(
     ]
 
     if len(vectors) == 0:
-
         return np.zeros(v_size)
 
     return np.mean(
@@ -210,16 +200,13 @@ url_input = st.text_input(
 # BUTTON PREDIKSI
 # ==========================================
 
-    if st.button("🔍 Prediksi Kategori", use_container_width=True):
-
+if st.button("🔍 Prediksi Kategori", use_container_width=True):
     if not url_input:
-
         st.warning(
             "⚠️ Mohon masukkan URL terlebih dahulu!"
         )
 
     elif "detik.com" not in url_input.lower():
-
         st.error(
             "❌ Link tidak valid! "
             "Pastikan URL berasal dari domain detik.com."
@@ -229,7 +216,6 @@ url_input = st.text_input(
         "sport.detik.com" in url_input.lower()
         or "finance.detik.com" in url_input.lower()
     ):
-
         st.warning(
             "⚠️ Kategori berita tidak didukung!"
         )
@@ -240,15 +226,12 @@ url_input = st.text_input(
         )
 
     else:
-
         with st.spinner(
             "Sedang mengambil dan menganalisis berita..."
         ):
-
             raw_text = get_detik_news_text(url_input)
 
             if not raw_text or len(raw_text.strip()) < 50:
-
                 st.error(
                     "❌ Gagal mengambil isi berita "
                     "atau halaman tidak ditemukan. "
@@ -256,7 +239,6 @@ url_input = st.text_input(
                 )
 
             else:
-
                 tokens = preprocessing_text(raw_text)
 
                 doc_vector = get_document_vector(
@@ -295,7 +277,6 @@ url_input = st.text_input(
                 with st.expander(
                     "📄 Lihat Cuplikan Isi Berita"
                 ):
-
                     st.write(
                         raw_text[:600] + "..."
                     )
