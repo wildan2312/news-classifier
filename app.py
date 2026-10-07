@@ -210,26 +210,31 @@ url_input = st.text_input(
 # BUTTON PREDIKSI
 # ==========================================
 
-if st.button(
-    "🔍 Prediksi Kategori",
-    use_container_width=True
-):
-
-    if not url_input:
-
+    if st.button(
+        "🔍 Prediksi Kategori",
+        use_container_width=True
+    ):
+    
+        if not url_input:
+    
         st.warning(
             "⚠️ Mohon masukkan URL terlebih dahulu!"
         )
-
-    elif "detik.com" not in url_input.lower():
-
+    
+    elif (
+        "sport.detik.com" not in url_input.lower()
+        and
+        "finance.detik.com" not in url_input.lower()
+    ):
+    
         st.error(
-            "❌ Link tidak valid! "
-            "Pastikan URL berasal dari domain detik.com."
+            "❌ Kategori berita tidak didukung! "
+            "Silakan masukkan URL dari "
+            "sport.detik.com atau finance.detik.com."
         )
-
+    
     else:
-
+    
         with st.spinner(
             "Sedang mengambil dan menganalisis berita..."
         ):
