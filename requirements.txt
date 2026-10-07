@@ -1,0 +1,10 @@
+jupyter-book
+matplotlib
+streamlit
+pandas
+numpy
+scikit-learn
+gensim
+beautifulsoup4
+requests
+nltk
