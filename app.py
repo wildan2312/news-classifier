@@ -210,47 +210,44 @@ url_input = st.text_input(
 # BUTTON PREDIKSI
 # ==========================================
 
-    if st.button(
-        "🔍 Prediksi Kategori",
-        use_container_width=True
-    ):
-    
-        if not url_input:
-    
+    if st.button("🔍 Prediksi Kategori", use_container_width=True):
+
+    if not url_input:
+
         st.warning(
             "⚠️ Mohon masukkan URL terlebih dahulu!"
         )
-    
-    elif (
-        "sport.detik.com" not in url_input.lower()
-        and
-        "finance.detik.com" not in url_input.lower()
-    ):
-    
+
+    elif "detik.com" not in url_input.lower():
+
         st.error(
-            "❌ Kategori berita tidak didukung! "
-            "Silakan masukkan URL dari "
-            "sport.detik.com atau finance.detik.com."
+            "❌ Link tidak valid! "
+            "Pastikan URL berasal dari domain detik.com."
         )
-    
+
+    elif not (
+        "sport.detik.com" in url_input.lower()
+        or "finance.detik.com" in url_input.lower()
+    ):
+
+        st.warning(
+            "⚠️ Kategori berita tidak didukung!"
+        )
+
+        st.info(
+            "Aplikasi ini hanya dapat memprediksi "
+            "berita kategori **SPORT** atau **FINANCE**."
+        )
+
     else:
-    
+
         with st.spinner(
             "Sedang mengambil dan menganalisis berita..."
         ):
 
-            # ==================================
-            # 1. SCRAPING
-            # ==================================
+            raw_text = get_detik_news_text(url_input)
 
-            raw_text = get_detik_news_text(
-                url_input
-            )
-
-            if (
-                not raw_text
-                or len(raw_text.strip()) < 50
-            ):
+            if not raw_text or len(raw_text.strip()) < 50:
 
                 st.error(
                     "❌ Gagal mengambil isi berita "
@@ -260,27 +257,13 @@ url_input = st.text_input(
 
             else:
 
-                # ==============================
-                # 2. PREPROCESSING
-                # ==============================
-
-                tokens = preprocessing_text(
-                    raw_text
-                )
-
-                # ==============================
-                # 3. WORD2VEC
-                # ==============================
+                tokens = preprocessing_text(raw_text)
 
                 doc_vector = get_document_vector(
                     tokens,
                     w2v_model,
                     vector_size
                 ).reshape(1, -1)
-
-                # ==============================
-                # 4. NAIVE BAYES
-                # ==============================
 
                 prediction = nb_model.predict(
                     doc_vector
@@ -293,10 +276,6 @@ url_input = st.text_input(
                 confidence = (
                     np.max(probabilities) * 100
                 )
-
-                # ==============================
-                # HASIL
-                # ==============================
 
                 st.success(
                     "Analisis Selesai!"
@@ -312,10 +291,6 @@ url_input = st.text_input(
                     f"Tingkat Keyakinan: "
                     f"**{confidence:.2f}%**"
                 )
-
-                # ==============================
-                # CUPLIKAN BERITA
-                # ==============================
 
                 with st.expander(
                     "📄 Lihat Cuplikan Isi Berita"
