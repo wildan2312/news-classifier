@@ -270,8 +270,6 @@ if st.button("🔍 Prediksi Kategori", use_container_width=True):
                 st.info(
                     f"Kategori Terdeteksi: "
                     f"**{str(prediction).upper()}**\n\n"
-                    f"Tingkat Keyakinan: "
-                    f"**{confidence:.2f}%**"
                 )
 
                 with st.expander(
