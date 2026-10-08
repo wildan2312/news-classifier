@@ -52,6 +52,68 @@ def load_models():
 w2v_model, nb_model, vector_size = load_models()
 
 
+
+
+# ==========================================
+# SCRAPING BERITA DETIK
+# ==========================================
+
+def get_detik_news_text(url): #scrapping
+    try:
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 "
+                "(Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 "
+                "(KHTML, like Gecko) "
+                "Chrome/120.0 Safari/537.36"
+            )
+        }
+
+        response = requests.get( #mengambil halaman berita dari URL
+            url,
+            headers=headers,
+            timeout=10
+        )
+
+        if response.status_code != 200:
+            return None
+
+        soup = BeautifulSoup(  #mengubah halaman HTML menjadi objek yang bisa dicari.
+            response.text,
+            "html.parser"
+        )
+
+        # Struktur Detik
+        article_body = soup.find( #mencari bagian isi berita.
+            "div",
+            class_="detail__body-text"
+        )
+
+        # Alternatif struktur
+        if not article_body:
+            article_body = soup.find(
+                "div",
+                class_="itp_bodycontent"
+            )
+
+        if article_body:
+            paragraphs = article_body.find_all("p") #mengambil teks dari paragraf-paragraf berita
+
+            text_content = " ".join(
+                p.get_text(" ", strip=True)
+                for p in paragraphs
+            )
+
+            return text_content
+
+        return None
+
+    except Exception as e:
+        st.error(f"Terjadi error saat mengambil berita: {e}")
+        return None
+
+
 # ==========================================
 # PREPROCESSING TEXT
 # ==========================================
@@ -88,76 +150,17 @@ def preprocessing_text(text):
     return tokens
 
 
-# ==========================================
-# SCRAPING BERITA DETIK
-# ==========================================
-
-def get_detik_news_text(url):
-    try:
-        headers = {
-            "User-Agent": (
-                "Mozilla/5.0 "
-                "(Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 "
-                "(KHTML, like Gecko) "
-                "Chrome/120.0 Safari/537.36"
-            )
-        }
-
-        response = requests.get(
-            url,
-            headers=headers,
-            timeout=10
-        )
-
-        if response.status_code != 200:
-            return None
-
-        soup = BeautifulSoup(
-            response.text,
-            "html.parser"
-        )
-
-        # Struktur Detik
-        article_body = soup.find(
-            "div",
-            class_="detail__body-text"
-        )
-
-        # Alternatif struktur
-        if not article_body:
-            article_body = soup.find(
-                "div",
-                class_="itp_bodycontent"
-            )
-
-        if article_body:
-            paragraphs = article_body.find_all("p")
-
-            text_content = " ".join(
-                p.get_text(" ", strip=True)
-                for p in paragraphs
-            )
-
-            return text_content
-
-        return None
-
-    except Exception as e:
-        st.error(f"Terjadi error saat mengambil berita: {e}")
-        return None
-
 
 # ==========================================
 # DOCUMENT VECTOR
 # ==========================================
 
-def get_document_vector(
+def get_document_vector( #mengubah token hasil preprocessing menjadi vektor dokumen.
     tokens,
     model,
     v_size
 ):
-    vectors = [
+    vectors = [ #setiap kata dicari vector-nya di model Word2Vec.
         model.wv[word]
         for word in tokens
         if word in model.wv
@@ -166,7 +169,7 @@ def get_document_vector(
     if len(vectors) == 0:
         return np.zeros(v_size)
 
-    return np.mean(
+    return np.mean( #semua vector kata dirata-ratakan menjadi satu document vector.
         vectors,
         axis=0
     )
